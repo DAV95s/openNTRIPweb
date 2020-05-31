@@ -19,7 +19,9 @@ class Main extends CI_Controller {
 		{
 			redirect('auth/login', 'refresh');
 		}
+		
+		$this->load->view('common/aside');
 		$this->load->view('dashboard');
-			
+		$this->load->view('common/footer');
 	}
 }

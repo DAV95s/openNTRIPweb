@@ -18,6 +18,13 @@ class Stations_model extends CI_Model
     return $result;
   }
 
+  public function getStationByName($id){
+    $query = $this->db->query("SELECT * FROM stations LEFT JOIN stations_info ON stations.id = stations_info.id WHERE stations.id =" .(int)$id);
+    $result = $query->row();
+
+    return $result;
+  }
+
   public function setNewStation($arr)
   {
       $mountpoint =  $this->db->escape($arr['mountpoint']);
