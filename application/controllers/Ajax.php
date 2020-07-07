@@ -14,18 +14,6 @@ class Ajax extends CI_Controller
     {
     }
 
-    public function stationsData()
-    {
-        if (!$this->ion_auth->logged_in()) {
-            // redirect them to the login page
-            redirect('auth/login', 'refresh');
-        }
-
-        $this->load->model('stations_model');
-        $result = $this->stations_model->getAllStations();
-        echo json_encode($result);
-    }
-
     public function stationsList()
     {
         $data = array();
@@ -35,13 +23,23 @@ class Ajax extends CI_Controller
         
         foreach ($result as $station) {
             $data['stations'][] = array(
-                            'id'	=> $station['id'],
-                            'mountpoint' => $station['mountpoint'],
-                   'is_online' => $station['is_online'] === '1',
-                'format' => $station['format']
-                        );
+                'id' => $station['id'],
+                'mountpoint' => $station['mountpoint'],
+                'identifier' => $station['identifier'],
+                'format' => $station['format'],
+                'format_details' => $station['format-details'],
+                'carrier' => $station['carrier'] == 1,
+                'nav_system' => $station['nav-system'],
+                'country' => $station['country'],
+                'lla' => $station['lla'],
+                'altitude' => $station['altitude'],
+                'bitrate' => $station['bitrate'],
+                'misc' => $station['misc'],
+                'is_online' => $station['is_online'] == 1,
+                'password' => $station['password'],
+                'hz' => $station['hz']
+            );
         }
-            
         $this->load->view('ajax/stationslist', $data);
     }
         
