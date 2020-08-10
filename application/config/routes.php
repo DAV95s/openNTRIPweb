@@ -50,6 +50,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |		my-controller/my-method	-> my_controller/my_method
 */
 $route['default_controller'] = 'main';
+$route['referencestation'] = 'ReferenceStation';
+$route['map'] = 'Map';
+$route['casters'] = 'Casters';
 $route['ajax/([a-z]+)'] = 'ajax/$1';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
