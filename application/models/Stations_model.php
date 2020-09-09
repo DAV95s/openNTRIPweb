@@ -2,7 +2,7 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Stations_model extends CI_Model
+// class Stations_model extends CI_Model
 {
     public function __construct()
     {
@@ -12,7 +12,7 @@ class Stations_model extends CI_Model
 
     public function getAllStations()
     {
-        $query = $this->db->query("SELECT `id`, `mountpoint`, `identifier`, `format`, REPLACE(`format-details`,',',' ') as 'format-details', carrier, `nav-system`, `country`, ST_X(lla) as lat, ST_Y(lla) as lon, `altitude`, `bitrate`, `misc`, IF(`is_online`, 'true', 'false') as is_online, `password`, `hz` FROM base_stations");
+        $query = $this->db->query("SELECT `id`, `name`, `identifier`, `format`, REPLACE(`format-details`,',',' ') as 'format-details', carrier, `nav-system`, `country`, ST_X(lla) as lat, ST_Y(lla) as lon, `altitude`, `bitrate`, `misc`, IF(`is_online`, 'true', 'false') as is_online, `password`, `hz` FROM reference_stations");
         $result = $query->result_array();
 
         return $result;
@@ -20,14 +20,20 @@ class Stations_model extends CI_Model
 
     public function getStationByName($id)
     {
-        $query = $this->db->query("SELECT `id`, `mountpoint`, `identifier`, `format`, `format-details`, carrier, `nav-system`, `country`, ST_AsText(lla) as lla, `altitude`, `bitrate`, `misc`, `is_online`, `password`, `hz` FROM base_stations WHERE `id` =".(int)$id);
+        $query = $this->db->query("SELECT `id`, `name`, `identifier`, `format`, `format-details`, carrier, `nav-system`, `country`, ST_AsText(lla) as lla, `altitude`, `bitrate`, `misc`, `is_online`, `password`, `hz` FROM reference_stations WHERE `id` =".(int)$id);
 
         return $query->row();
     }
 
+    public function removeStation($id)
+    {
+        $query = $this->db->query("DELETE FROM reference_stations WHERE id = ". (int)$id .";");
+        return $query;
+    }
+
     public function getStationsPosition()
     {
-        $query = $this->db->query("SELECT mountpoint, ST_AsText(lla) as lla FROM base_stations");
+        $query = $this->db->query("SELECT `name`, ST_AsText(lla) as lla FROM reference_stations");
         $result = $query->result_array();
 
         return $result;
@@ -35,7 +41,7 @@ class Stations_model extends CI_Model
 
     public function setNewStation($arr)
     {
-        return $this->db->insert('base_stations', $arr);
+        return $this->db->insert('reference_stations', $arr);
     }
 
     public function getAllCasters()
@@ -43,6 +49,12 @@ class Stations_model extends CI_Model
         $query = $this->db->query("SELECT `id`, `address`, `port`, `group_id`, IF(`status`, 'true', 'false') as 'status' FROM ntrip.casters;");
 
         return $query->result_array();
+    }
+
+    public function removeCaster($id)
+    {
+        $query = $this->db->query("DELETE FROM casters WHERE id = " . (int)$id);
+        return $query;
     }
 
     public function addNewCaster($port)
@@ -56,7 +68,8 @@ class Stations_model extends CI_Model
         }
     }
 
-    public function addMountpoint($arr){
+    public function addMountpoint($arr)
+    {
         return $this->db->insert('mountpoints', $arr);
     }
 

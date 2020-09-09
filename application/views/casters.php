@@ -16,7 +16,7 @@
               d="M4.094 4a.5.5 0 0 0-.44.26l-2.47 4.532A1.5 1.5 0 0 0 1 9.51v.99H0v-.99c0-.418.105-.83.305-1.197l2.472-4.531A1.5 1.5 0 0 1 4.094 3h7.812a1.5 1.5 0 0 1 1.317.782l2.472 4.53c.2.368.305.78.305 1.198v.99h-1v-.99a1.5 1.5 0 0 0-.183-.718L12.345 4.26a.5.5 0 0 0-.439-.26H4.094z" />
           </svg>
           Port: {{caster.port}}</a>
-        <button class="nav-link btn btn-sm btn-outline-primary mt-2" data-toggle="modal" data-target="#addCaster">
+        <button class="nav-link btn btn-sm btn-outline-primary mt-2" v-on:click="addStation" data-toggle="modal" data-target="#addCaster">
           <svg width="1.3em" height="1.3em" viewBox="0 0 16 16" class="bi bi-plus-circle" fill="currentColor"
             xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd"
@@ -24,7 +24,16 @@
             <path fill-rule="evenodd" d="M7.5 8a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0V8z" />
             <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
           </svg>
-          Add new</button>
+          Add new
+        </button>
+    
+        <button class="nav-link btn btn-sm btn-outline-danger mt-2" v-on:click="removeCaster">
+          <svg width="1.3em" height="1.3em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+          </svg>
+          Delete
+        </button>
       </div>
     </div>
     <div class="col-10">
@@ -39,8 +48,8 @@
             </div>
             <div class="btn-toolbar mb-2 mb-md-0">
               <div class="btn-group mr-1">
-                <button type="button" data-toggle="modal" v-on:click="select_casteId" data-target="#addMountpoint"
-                  class="btn btn-sm btn-outline-secondary">New mountpoint</button>
+                <button type="button" data-toggle="modal" data-target="#addMountpoint"
+                  class="btn btn-sm btn-outline-secondary">Add mountpoint</button>
               </div>
             </div>
           </div>
@@ -70,10 +79,21 @@
                   <td>{{mountpoint.network}}</td>
                   <td>{{mountpoint.nmea}}</td>
                   <td>{{mountpoint.authentication}}</td>
-                  <td>
+                  <td class="d-flex justify-content-between">
                     <div class="form-check form-switch">
                       <input class="form-check-input" type="checkbox"
                         @change="mountpointStatusSwitcher(mountpoint, $event)" v-model="mountpoint.available">
+                    </div>
+                    <div>
+                    <button type="button" class="btn btn-sm btn-outline-primary">
+                      <svg width="1.2em" height="1.2em" viewBox="0 0 16 16" class="bi bi-gear" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path fill-rule="evenodd" d="M8.837 1.626c-.246-.835-1.428-.835-1.674 0l-.094.319A1.873 1.873 0 0 1 4.377 3.06l-.292-.16c-.764-.415-1.6.42-1.184 1.185l.159.292a1.873 1.873 0 0 1-1.115 2.692l-.319.094c-.835.246-.835 1.428 0 1.674l.319.094a1.873 1.873 0 0 1 1.115 2.693l-.16.291c-.415.764.42 1.6 1.185 1.184l.292-.159a1.873 1.873 0 0 1 2.692 1.116l.094.318c.246.835 1.428.835 1.674 0l.094-.319a1.873 1.873 0 0 1 2.693-1.115l.291.16c.764.415 1.6-.42 1.184-1.185l-.159-.291a1.873 1.873 0 0 1 1.116-2.693l.318-.094c.835-.246.835-1.428 0-1.674l-.319-.094a1.873 1.873 0 0 1-1.115-2.692l.16-.292c.415-.764-.42-1.6-1.185-1.184l-.291.159A1.873 1.873 0 0 1 8.93 1.945l-.094-.319zm-2.633-.283c.527-1.79 3.065-1.79 3.592 0l.094.319a.873.873 0 0 0 1.255.52l.292-.16c1.64-.892 3.434.901 2.54 2.541l-.159.292a.873.873 0 0 0 .52 1.255l.319.094c1.79.527 1.79 3.065 0 3.592l-.319.094a.873.873 0 0 0-.52 1.255l.16.292c.893 1.64-.902 3.434-2.541 2.54l-.292-.159a.873.873 0 0 0-1.255.52l-.094.319c-.527 1.79-3.065 1.79-3.592 0l-.094-.319a.873.873 0 0 0-1.255-.52l-.292.16c-1.64.893-3.433-.902-2.54-2.541l.159-.292a.873.873 0 0 0-.52-1.255l-.319-.094c-1.79-.527-1.79-3.065 0-3.592l.319-.094a.873.873 0 0 0 .52-1.255l-.16-.292c-.892-1.64.902-3.433 2.541-2.54l.292.159a.873.873 0 0 0 1.255-.52l.094-.319z"/>
+                      <path fill-rule="evenodd" d="M8 5.754a2.246 2.246 0 1 0 0 4.492 2.246 2.246 0 0 0 0-4.492zM4.754 8a3.246 3.246 0 1 1 6.492 0 3.246 3.246 0 0 1-6.492 0z"/>
+                      </svg>
+                    </button>
+                    <button type="button" v-on:click="removeMountpoint(mountpoint.id)" class="btn btn-sm btn-outline-danger">
+                      <svg width="1.2em" height="1.2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="bi bi-trash"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path> <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg>
+                    </button>
                     </div>
                   </td>
                 </tr>
@@ -117,7 +137,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">New mountpoint</h5>
+          <h5 class="modal-title">Add mountpoint</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -140,22 +160,15 @@
             </div>
             <div class="mb-3">
               <div class="form-check form-switch">
-                <input class="form-check-input" name="nmea" type="checkbox" id="f_nmea">
+                <input class="form-check-input" v-model="requireNmea" name="nmea" type="checkbox" id="f_nmea">
                 <label class="form-check-label" for="f_nmea">Require NMEA message from Client</label>
               </div>
             </div>
             <div class="mb-3">
-              <label class="form-check-label mb-2" for="basepull">List of reference stations</label>
-              <div class="border bg-light p-2" name="bases_id" id="basepull" style="height: 150px; overflow: auto;">
-                <div v-for="item in stationsList" class="checkbox">
-                  <label>
-                    <input type="checkbox" name="mountpoints" v-model="checkedNames" v-on:click="newChecked" :value="item.id">
-                    {{ item.mountpoint }}
-                  </label>
-                </div>
-              </div>
-              <a href="javascript:void(0)" v-on:click="selectAll(); newChecked();" class="font-weight-lighter">select
-                all</a>
+              <label class="form-check-label mb-2" for="stationspull">List of reference stations</label>
+              <select class="form-select" name="stations_id" v-model="selectedStations" id="stationspull" :multiple="requireNmea" aria-label="multiple select example">
+                <option v-for="item in stationsList" :value="item.id">{{ item.name }}</option>
+              </select>
             </div>
           </form>
         </div>

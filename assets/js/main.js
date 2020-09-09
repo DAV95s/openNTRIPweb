@@ -6,11 +6,12 @@ var app = new Vue({
     layers: [],
     casters: [],
     stationsList: [],
-    checkedNames: [],
+    requireNmea: false,
+    selectedStations: [],
   },
   mounted() {
     this.initMap();
-    this.getStations();
+    this.getAllStations();
     this.getAllCasters();
   },
   methods: {
@@ -34,46 +35,21 @@ var app = new Vue({
       for (let station of this.stationsList) {
         if (station["lat"] != null && station["lon"] != null) {
           station["marker"] = L.marker([station["lat"], station["lon"]])
-            .bindPopup("<b>" + station["mountpoint"] + "</b>")
+            .bindPopup("<b>" + station["name"] + "</b>")
             .addTo(this.map);
         }
       }
     },
-    select_casteId(){
-      //replace caster_id in form "New mountpoint"
-      let input = document.querySelector("#f_addmountpoint [name='caster_id']");
-      let active = document.querySelector("#v-pills-tab .active").dataset.id;
-      input.value = active;
-    },
-    casterStatusSwitcher(key, event) {
-      let input = event.currentTarget;
-      input.disabled = true;
-
-      let caster = this.casters[key];
-      let data = new FormData();
-      data.append("casterid", caster["id"]);
-      data.append("status", caster["status"]);
-
-      axios
-        .post("ajax/onOffCaster", data)
-        .then((response) => {
-          input.disabled = false;
-        })
-        .catch((error) => {
-          console.log(error);
-          input.disabled = false;
-        });
-    },
+   
     mountpointStatusSwitcher(mountpoint, event) {
       let input = event.currentTarget;
-      input.disabled = true;
 
       let data = new FormData();
       data.append("id", mountpoint["id"]);
       data.append("status", mountpoint["available"]);
 
       axios
-        .post("ajax/onOffMountpoint", data)
+        .post("ajax/mountpoint/onOffMountpoint", data)
         .then((response) => {
           input.disabled = false;
         })
@@ -81,35 +57,13 @@ var app = new Vue({
           input.disabled = false;
         });
     },
-    selectAll() {
-      let pool = document.querySelectorAll("[name='mountpoints']");
-      let indicator = 0;
-      for (input of pool) {
-        if (!input.checked) {
-          input.checked = true;
-          this.checkedNames.push(input.value);
-          indicator++;
-        }
-      }
-      if (indicator === 0) {
-        for (input of pool) {
-          input.checked = false;
-          removeElement(this.checkedNames, input.value);
-        }
-      }
-    },
-    newChecked() {
-      let checked = document.querySelectorAll("[name='mountpoints']:checked");
-      if (checked.length > 1) {
-        document.getElementById("f_nmea").checked = true;
-      }
-    },
     addMountpoint() {
       let button = document.querySelector("#f_addmountpoint_submit");
       loading_btn(button);
       let form = document.getElementById("f_addmountpoint");
       let data = new FormData(form);
-      data.append("list", JSON.stringify(this.checkedNames));
+      data.delete('stations_id');
+      data.append('stations_id', JSON.stringify(app.selectedStations));
       // clear error messages
       var list = document.querySelectorAll("#f_addmountpoint input");
       for (let item of list) item.classList.remove("is-invalid");
@@ -119,9 +73,9 @@ var app = new Vue({
 
       // post
       axios
-        .post("ajax/addMountPoint", data)
+        .post("ajax/mountpoint/addMountpoint", data)
         .then((response) => {
-          if (response.data == "OK") {
+          if (response.data == "1") {
             form.reset();
             let modal = bootstrap.Modal.getInstance(
               document.getElementById("addMountpoint")
@@ -143,19 +97,37 @@ var app = new Vue({
           original_btn(button);
         });
     },
-    getStations() {
-      axios.post("ajax/stationsList").then(function (response) {
+    removeMountpoint(id){
+      if (confirm("Do you really want to delete this mount point?")) {
+        let data = new FormData();
+        data.append("id", id);
+
+        axios
+          .post("ajax/mountpoint/removeMountpoint", data)
+          .then((response) => {
+            console.log(response.data);
+            app.getAllCasters();
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    },
+    // STATIONS
+    getAllStations() {
+      axios.post("ajax/station/getAllStations").then(function (response) {
         app.stationsList = response.data;
         app.renderMap();
       });
     },
+
     addStation() {
       let button = document.querySelector("#f_addstation_submit");
       loading_btn(button);
       let form = document.getElementById("f_addstation");
       let data = new FormData(form);
 
-      // clear error messages
+      // remove error messages
       var list = document.querySelectorAll("#f_addstation input");
       for (let item of list) item.classList.remove("is-invalid");
 
@@ -164,23 +136,24 @@ var app = new Vue({
 
       // post
       axios
-        .post("ajax/addStation", data)
+        .post("ajax/station/addStation", data)
         .then((response) => {
-          if (response.data == "OK") {
+          if (response.data == "1") {
             form.reset();
             let modal = bootstrap.Modal.getInstance(
               document.getElementById("addStation")
             );
             modal.hide();
+            app.stationsList();
           } else {
             for (let err in response.data) {
+              console.log(response.data);
               if (response.data[err] === "") continue;
               let element = document.getElementsByName(err)[0];
               element.classList.add("is-invalid");
               element.insertAdjacentHTML("afterend", response.data[err]);
             }
           }
-
           original_btn(button);
         })
         .catch((error) => {
@@ -188,8 +161,27 @@ var app = new Vue({
           original_btn(button);
         });
     },
+
+    removeStation(id) {
+      if (confirm("Do you really want to delete this station?")) {
+        let data = new FormData();
+        data.append("id", id);
+
+        axios
+          .post("ajax/station/removeStation", data)
+          .then((response) => {
+            console.log(response.data);
+            app.getAllStations();
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    },
+    // STATIONS
+    // CASTERS
     getAllCasters() {
-      axios.post("ajax/getCasters").then(function (response) {
+      axios.post("ajax/caster/getAllCasters").then(function (response) {
         app.casters = response.data;
       });
     },
@@ -207,9 +199,9 @@ var app = new Vue({
       for (let item of list) item.parentNode.removeChild(item);
 
       axios
-        .post("ajax/addCaster", data)
+        .post("ajax/caster/addCaster", data)
         .then((response) => {
-          if (response.data == "OK") {
+          if (response.data == "1") {
             form.reset();
 
             let modal = bootstrap.Modal.getInstance(
@@ -230,6 +222,46 @@ var app = new Vue({
           console.log(error);
         });
     },
+    removeCaster() {
+      if (confirm("Do you really want to leave this station?")) {
+        let id = document.querySelector("#v-pills-tab .active").dataset.id;
+        let data = new FormData();
+        data.append("id", id);
+
+        axios
+          .post("ajax/caster/removeCaster", data)
+          .then((response) => {
+            if (response.data == "1") {
+              app.getAllCasters();
+            } else {
+              console.log(response);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    },
+    casterStatusSwitcher(key, event) {
+      let input = event.currentTarget;
+      // input.disabled = true;
+
+      let caster = this.casters[key];
+      let data = new FormData();
+      data.append("casterid", caster["id"]);
+      data.append("status", caster["status"]);
+
+      axios
+        .post("ajax/caster/onOffCaster", data)
+        .then((response) => {
+          // input.disabled = false;
+        })
+        .catch((error) => {
+          console.log(error);
+          // input.disabled = false;
+        });
+    },
+    // CASTERS
   },
 });
 
@@ -254,11 +286,3 @@ for (let link of links) {
   }
 }
 
-function removeElement(arr, el) {
-  for (var i = 0; i < arr.length; i++) {
-    if (arr[i] === el) {
-      arr.splice(i, 1);
-      return;
-    }
-  }
-}
